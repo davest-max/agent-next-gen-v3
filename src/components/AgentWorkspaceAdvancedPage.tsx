@@ -9783,8 +9783,10 @@ export function AgentWorkspaceAdvancedPage({
                   <div
                     key={interaction.id}
                     className={
-                      interaction.id === TOM_LEWIS_CALL_ID && tomLewisCallRinging && tomLewisRingSeconds <= 10
-                        ? "w-fit mb-2 rounded-lyra-sm ring-2 ring-lyra-status-critical-strong [&>*]:mb-0"
+                      interaction.id === TOM_LEWIS_CALL_ID && tomLewisCallRinging
+                        ? `w-fit mb-2 rounded-lyra-sm [&>*]:mb-0 motion-reduce:animate-none ${
+                            tomLewisRingSeconds <= 10 ? "animate-ring-urgent" : "animate-ring-glow"
+                          }`
                         : undefined
                     }
                   >
@@ -9909,7 +9911,11 @@ export function AgentWorkspaceAdvancedPage({
                               handleAcceptTomLewisCall();
                             }}
                           >
-                            <Phone className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
+                            <Phone
+                              className="h-4 w-4 origin-center motion-reduce:animate-none animate-phone-ring"
+                              strokeWidth={1.5}
+                              aria-hidden="true"
+                            />
                             Accept
                           </Button>
                           <Button

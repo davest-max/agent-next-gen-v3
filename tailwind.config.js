@@ -53,10 +53,43 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "phone-ring": {
+          "0%, 60%, 100%": { transform: "rotate(0deg)" },
+          "65%": { transform: "rotate(-14deg)" },
+          "70%": { transform: "rotate(14deg)" },
+          "75%": { transform: "rotate(-10deg)" },
+          "80%": { transform: "rotate(10deg)" },
+          "85%": { transform: "rotate(0deg)" },
+        },
+        "ring-glow": {
+          "0%, 100%": {
+            boxShadow:
+              "0 0 0 2px color-mix(in srgb, var(--lyra-color-status-critical-strong) 25%, transparent), 0 0 6px 1px color-mix(in srgb, var(--lyra-color-status-critical-strong) 15%, transparent)",
+          },
+          "50%": {
+            boxShadow:
+              "0 0 0 2px color-mix(in srgb, var(--lyra-color-status-critical-strong) 35%, transparent), 0 0 14px 4px color-mix(in srgb, var(--lyra-color-status-critical-strong) 35%, transparent)",
+          },
+        },
+        "ring-urgent": {
+          "0%, 100%": {
+            boxShadow:
+              "0 0 0 2px var(--lyra-color-status-critical-strong), 0 0 6px 2px color-mix(in srgb, var(--lyra-color-status-critical-strong) 35%, transparent)",
+          },
+          "50%": {
+            boxShadow:
+              "0 0 0 2px var(--lyra-color-status-critical-strong), 0 0 16px 6px color-mix(in srgb, var(--lyra-color-status-critical-strong) 55%, transparent)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 200ms ease-in-out",
         "accordion-up": "accordion-up 200ms ease-in-out",
+        // Incoming call: phone icon shakes like a ringing phone.
+        "phone-ring": "phone-ring 2s ease-in-out infinite",
+        // Incoming call: soft glow around the tile while it rings, and a stronger one under 10 seconds.
+        "ring-glow": "ring-glow 2.4s ease-in-out infinite",
+        "ring-urgent": "ring-urgent 1.6s ease-in-out infinite",
       },
     },
   },
