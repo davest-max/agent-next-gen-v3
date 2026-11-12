@@ -3555,6 +3555,28 @@ export function AgentWorkspaceAdvancedPage({
   const [tomLewisCallLeaving, setTomLewisCallLeaving] = useState(false);
   // The result shown in the tile's footer before it wipes away (replaces the bottom-right toast for these two cases).
   const [tomLewisOutcomeNote, setTomLewisOutcomeNote] = useState<string | null>(null);
+  // When the assignment list changes, the tiles that remain glide to their new
+  // positions instead of jumping. Layout positions (`offsetTop`) are used, not
+  // `getBoundingClientRect`, so a tile still mid-glide isn't measured wrongly.
+  const assignmentTileRefs = useRef(new Map<string, HTMLDivElement>());
+  const assignmentTileTops = useRef(new Map<string, number>());
+  useLayoutEffect(() => {
+    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    const nextTops = new Map<string, number>();
+    assignmentTileRefs.current.forEach((el, id) => {
+      const top = el.offsetTop;
+      nextTops.set(id, top);
+      const prevTop = assignmentTileTops.current.get(id);
+      if (prevTop === undefined || reduceMotion) return;
+      const delta = prevTop - top;
+      if (Math.abs(delta) < 1) return;
+      el.animate([{ transform: `translateY(${delta}px)` }, { transform: "translateY(0)" }], {
+        duration: 240,
+        easing: "cubic-bezier(0.2, 0, 0, 1)",
+      });
+    });
+    assignmentTileTops.current = nextTops;
+  });
   // Shared by Decline (agent action) and the countdown reaching zero (auto-return to queue).
   const dismissTomLewisCall = (note: string) => {
     if (tomLewisCallLeaving || tomLewisOutcomeNote) return;
@@ -9793,6 +9815,10 @@ export function AgentWorkspaceAdvancedPage({
                 return (
                   <div
                     key={interaction.id}
+                    ref={(el) => {
+                      if (el) assignmentTileRefs.current.set(interaction.id, el);
+                      else assignmentTileRefs.current.delete(interaction.id);
+                    }}
                     className={
                       interaction.id === TOM_LEWIS_CALL_ID && tomLewisCallRinging
                         ? `relative w-fit mb-2 rounded-lyra-sm [&>*]:mb-0 [&_button:has(.text-lyra-status-info-strong)]:hidden ${
@@ -9804,7 +9830,7 @@ export function AgentWorkspaceAdvancedPage({
                   {tomLewisOutcomeNote && interaction.id === TOM_LEWIS_CALL_ID ? (
                     // After Decline / auto-return the tile is just the result: no name, channel, skill or timer.
                     // Announced to screen readers by InlineNotification's own status role.
-                    <InlineNotification variant="info" className="w-full border border-lyra-status-info-strong">
+                    <InlineNotification variant="info" className="w-full border border-lyra-status-info-strong animate-in fade-in-0 duration-200">
                       {tomLewisOutcomeNote}
                     </InlineNotification>
                   ) : (
