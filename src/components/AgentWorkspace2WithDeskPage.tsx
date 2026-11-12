@@ -51,7 +51,6 @@ import {
   ToggleGroup,
   Popover,
   PanelHeader,
-  SuccessIconSolid,
   OutcomePanel,
   Toast,
   ToastContainer,
@@ -269,6 +268,7 @@ import {
   Inbox,
   Check,
   type LucideIcon,
+  CircleCheckBig,
 } from "lucide-react";
 
 // Shared default width for the single app-header panel (Search/Customers/
@@ -8926,7 +8926,7 @@ export function AgentWorkspace2WithDeskPage({
                                                 } satisfies ChannelOutcomeConfig}
                                               >
                                                 <Button variant="icon" size="icon-sm" title="Outcome" className="text-lyra-fg-secondary">
-                                                  <SuccessIconSolid className="h-4 w-4 text-lyra-status-info-strong" />
+                                                  <CircleCheckBig className="h-4 w-4 text-lyra-status-info-strong" strokeWidth={2.5} />
                                                 </Button>
                                               </OutcomePanel>
                                             )}
