@@ -7857,6 +7857,8 @@ export function AgentWorkspaceAdvancedPage({
         out.push(
           <div key="history" className={wrap || undefined}>
                       <ContactHistoryCard
+                        onRedialEntry={(entry, anchorEl) => handleRedialButtonClick(entry, anchorEl)}
+                        redialDisabled={agentOnActiveVoiceCall}
                         onSelectEntry={(entry) => {
                           // Clicking the row that's ALREADY selected closes
                           // the panel instead of re-opening it on itself —

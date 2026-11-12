@@ -40,6 +40,7 @@ import {
   MoreVertical,
   History,
   Inbox,
+  PhoneOutgoing,
 } from "lucide-react";
 
 // Per explicit request ("for phase 1 we will not have the transcript
@@ -1222,12 +1223,20 @@ export function ContactHistoryDateFilterChip({
 
 export function ContactHistoryCard({
   onSelectEntry,
+  onRedialEntry,
+  redialDisabled,
   selectedEntryId,
   historyByRange,
   hideCustomerNames,
   onOpenAllContacts,
   defaultDateFilter,
 }: {
+  /** Voice rows show a Redial button. Clicking it calls this with the row's
+   *  entry and the button element (for the dial-pad popover's anchor). It
+   *  stops the click from also opening the row's summary. */
+  onRedialEntry?: (entry: ContactHistoryEntry, anchorEl: HTMLElement | null) => void;
+  /** Disables every row's Redial button (e.g. while a call is already in progress). */
+  redialDisabled?: boolean;
   /** Fired by clicking anywhere on a row — opens this entry's summary in
    *  `AgentNextGenPage`'s shared right-docked `InteriorPanel` slot (main
    *  component's own `selectedContactHistoryEntry` state), rather than
@@ -1536,6 +1545,22 @@ export function ContactHistoryCard({
                     />
                   </Tooltip>
                   <span className="lyra-body-sm text-lyra-fg-secondary whitespace-nowrap">{formatContactTime(entry.endedAt)}</span>
+                  {entry.channelType === "voice" && onRedialEntry && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={redialDisabled}
+                      title={redialDisabled ? "A call is already in progress" : undefined}
+                      onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                        // Stops the click from also opening this row's summary.
+                        e.stopPropagation();
+                        onRedialEntry(entry, e.currentTarget);
+                      }}
+                    >
+                      <PhoneOutgoing className="h-3.5 w-3.5" strokeWidth={1.5} />
+                      Redial
+                    </Button>
+                  )}
                 </div>
               </div>
             );
