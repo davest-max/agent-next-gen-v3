@@ -1761,9 +1761,16 @@ export function AgentWorkspaceAdvancedPage({
   // backend here to persist an outcome to, same no-op placeholder state
   // every other not-yet-wired action in this file starts from (e.g. Consult
   // / Transfer — see rule #30's own note in CLAUDE.md).
+  // Saving an Outcome after a call returns the agent to Available. It only
+  // applies while they're in After Call Work, so a status they chose
+  // themselves is never overridden.
+  const returnToAvailableAfterOutcome = () => {
+    if (agentStatus === "after-call-work") handleStatusChange("available");
+  };
   const handleOutcomeSave = () => {
     setOutcomeDraftKey(null);
     setOutcomeDraftSource(null);
+    returnToAvailableAfterOutcome();
   };
   const handleOutcomeCancel = () => {
     setOutcomeDraftKey(null);
@@ -1780,6 +1787,7 @@ export function AgentWorkspaceAdvancedPage({
   const handleOutcomeSaveAndDismiss = (interactionId: string) => {
     setOutcomeDraftKey(null);
     setOutcomeDraftSource(null);
+    returnToAvailableAfterOutcome();
     handleDismissInteraction(interactionId);
   };
   // "Save & Redial" opens the exact same "Redial Contact" dial-pad popover
@@ -1789,6 +1797,7 @@ export function AgentWorkspaceAdvancedPage({
   // `handleDialpadSubmit` recognize a matching submission as "finish
   // redialing THIS interaction" rather than an unrelated new quick dial.
   const handleOutcomeSaveAndRedial = (interactionId: string, phoneNumber: string, anchorEl: HTMLElement | null) => {
+    returnToAvailableAfterOutcome();
     setOutcomeDraftKey(null);
     setOutcomeDraftSource(null);
     setRedialActiveInteraction({ interactionId, phoneNumber });
