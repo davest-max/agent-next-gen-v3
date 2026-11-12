@@ -9796,7 +9796,7 @@ export function AgentWorkspaceAdvancedPage({
                   {tomLewisOutcomeNote && interaction.id === TOM_LEWIS_CALL_ID ? (
                     // After Decline / auto-return the tile is just the result: no name, channel, skill or timer.
                     // Announced to screen readers by InlineNotification's own status role.
-                    <InlineNotification variant="info" className="w-full">
+                    <InlineNotification variant="info" className="w-full border border-lyra-status-info-strong">
                       {tomLewisOutcomeNote}
                     </InlineNotification>
                   ) : (
