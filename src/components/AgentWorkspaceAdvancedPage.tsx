@@ -9784,7 +9784,7 @@ export function AgentWorkspaceAdvancedPage({
                     key={interaction.id}
                     className={
                       interaction.id === TOM_LEWIS_CALL_ID && tomLewisCallRinging
-                        ? `relative w-fit mb-2 rounded-lyra-sm [&>*]:mb-0 [&_button:has(.lucide-circle-check)]:hidden ${
+                        ? `relative w-fit mb-2 rounded-lyra-sm [&>*]:mb-0 [&_button:has(.text-lyra-status-info-strong)]:hidden ${
                             tomLewisCallLeaving ? "animate-wipe-left" : ""
                           }`
                         : undefined
