@@ -3544,22 +3544,25 @@ export function AgentWorkspaceAdvancedPage({
     });
   };
   const [tomLewisCallLeaving, setTomLewisCallLeaving] = useState(false);
+  // The result shown in the tile's footer before it wipes away (replaces the bottom-right toast for these two cases).
+  const [tomLewisOutcomeNote, setTomLewisOutcomeNote] = useState<string | null>(null);
   // Shared by Decline (agent action) and the countdown reaching zero (auto-return to queue).
-  const dismissTomLewisCall = (toast: { title: string; message: string }) => {
-    if (tomLewisCallLeaving) return;
-    addToast({ variant: "info", ...toast, duration: 4000 });
-    setTomLewisCallLeaving(true);
-    // Let the tile animate out before removing it.
+  const dismissTomLewisCall = (note: string) => {
+    if (tomLewisCallLeaving || tomLewisOutcomeNote) return;
+    setTomLewisOutcomeNote(note);
+    // Hold the result on the tile long enough to read, then wipe it away.
     window.setTimeout(() => {
-      setTomLewisCallRinging(false);
-      setInteractions((prev) => prev.filter((i) => i.id !== TOM_LEWIS_CALL_ID));
-      setTomLewisCallLeaving(false);
-    }, 350);
+      setTomLewisCallLeaving(true);
+      window.setTimeout(() => {
+        setTomLewisCallRinging(false);
+        setInteractions((prev) => prev.filter((i) => i.id !== TOM_LEWIS_CALL_ID));
+        setTomLewisCallLeaving(false);
+        setTomLewisOutcomeNote(null);
+      }, 350);
+    }, 1500);
   };
-  const handleDeclineTomLewisCall = () =>
-    dismissTomLewisCall({ title: "Call declined", message: "Tom Lewis call declined" });
-  const handleTomLewisReturnToQueue = () =>
-    dismissTomLewisCall({ title: "Call returned to queue", message: "Tom Lewis call returned to queue" });
+  const handleDeclineTomLewisCall = () => dismissTomLewisCall("Call declined. Returned to queue.");
+  const handleTomLewisReturnToQueue = () => dismissTomLewisCall("No answer. Returned to queue.");
   // Count down while the call rings; at zero it goes back to the queue automatically.
   useEffect(() => {
     if (!tomLewisCallRinging || tomLewisCallLeaving) return;
@@ -9902,6 +9905,10 @@ export function AgentWorkspaceAdvancedPage({
                     // render for a given card.
                     footerAction={
                       interaction.id === TOM_LEWIS_CALL_ID && tomLewisCallRinging ? (
+                        tomLewisOutcomeNote ? (
+                          // The result sits where the agent just clicked, and is announced to screen readers.
+                          <InlineNotification variant="info">{tomLewisOutcomeNote}</InlineNotification>
+                        ) : (
                         <div className="flex flex-row-reverse gap-2">
                           <Button
                             variant="default"
@@ -9931,6 +9938,7 @@ export function AgentWorkspaceAdvancedPage({
                             Decline
                           </Button>
                         </div>
+                        )
                       ) : undefined
                     }
                     headerAction={
