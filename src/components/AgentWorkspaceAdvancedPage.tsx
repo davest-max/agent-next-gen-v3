@@ -9793,6 +9793,13 @@ export function AgentWorkspaceAdvancedPage({
                         : undefined
                     }
                   >
+                  {tomLewisOutcomeNote && interaction.id === TOM_LEWIS_CALL_ID ? (
+                    // After Decline / auto-return the tile is just the result: no name, channel, skill or timer.
+                    // Announced to screen readers by InlineNotification's own status role.
+                    <InlineNotification variant="info" className="w-full">
+                      {tomLewisOutcomeNote}
+                    </InlineNotification>
+                  ) : (
                   <InteractionNavCard
                     // The auto-return / decline exit is a clip-wipe on this wrapper, not lyra-ui's slide-up.
                     leaving={false}
@@ -9905,10 +9912,6 @@ export function AgentWorkspaceAdvancedPage({
                     // render for a given card.
                     footerAction={
                       interaction.id === TOM_LEWIS_CALL_ID && tomLewisCallRinging ? (
-                        tomLewisOutcomeNote ? (
-                          // The result sits where the agent just clicked, and is announced to screen readers.
-                          <InlineNotification variant="info">{tomLewisOutcomeNote}</InlineNotification>
-                        ) : (
                         <div className="flex flex-row-reverse gap-2">
                           <Button
                             variant="default"
@@ -9938,7 +9941,6 @@ export function AgentWorkspaceAdvancedPage({
                             Decline
                           </Button>
                         </div>
-                        )
                       ) : undefined
                     }
                     headerAction={
@@ -9984,7 +9986,8 @@ export function AgentWorkspaceAdvancedPage({
                     currentChannelKey={currentId}
                     onCurrentChannelChange={(key) => handleChannelSelect(interaction.id, key)}
                   />
-                  {interaction.id === TOM_LEWIS_CALL_ID && tomLewisCallRinging && tomLewisRingSeconds <= 10 && !tomLewisCallLeaving && (
+                  )}
+                  {interaction.id === TOM_LEWIS_CALL_ID && tomLewisCallRinging && tomLewisRingSeconds <= 10 && !tomLewisCallLeaving && !tomLewisOutcomeNote && (
                     // Red border and glow appear together, under 10 seconds. The overlay matches the tile's box exactly.
                     <div
                       aria-hidden="true"
