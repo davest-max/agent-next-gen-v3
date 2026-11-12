@@ -360,7 +360,6 @@ import {
   Check,
   X,
   Phone,
-  PhoneOff,
   ChevronDown,
   ChevronUp,
   type LucideIcon,
@@ -2169,6 +2168,16 @@ export function AgentWorkspaceAdvancedPage({
   // Seconds left before an unanswered ringing call auto-returns to the queue. Counts down only while ringing.
   const TOM_LEWIS_RING_SECONDS = 30;
   const [tomLewisRingSeconds, setTomLewisRingSeconds] = useState(TOM_LEWIS_RING_SECONDS);
+  // The countdown shown on the ringing call (card header and channel row). Red under 10 seconds.
+  const renderTomLewisRingTimer = () => (
+    <span
+      className={
+        tomLewisRingSeconds <= 10 ? "tabular-nums font-medium text-lyra-status-critical-strong" : "tabular-nums"
+      }
+    >
+      {`00:${String(tomLewisRingSeconds).padStart(2, "0")}`}
+    </span>
+  );
   // Cold inbound calls with no AI agent (Tom rings and needs Accept; Maya is answered automatically).
   const isColdCallId = (id: string | undefined) => id === TOM_LEWIS_CALL_ID || id === MAYA_CHEN_CALL_ID;
   const findLiveVoiceThread = (interaction: Interaction) => {
@@ -9313,8 +9322,11 @@ export function AgentWorkspaceAdvancedPage({
                     // Still blanked once `slaSuppressed` (closed/resolved)
                     // — same "nothing left to time" reasoning as every
                     // other channel type.
-                    elapsed: slaSuppressed
-                      ? ""
+                    elapsed:
+                      interaction.id === TOM_LEWIS_CALL_ID && tomLewisCallRinging
+                        ? renderTomLewisRingTimer()
+                        : slaSuppressed
+                        ? ""
                       : c.type === "voice"
                       ? formatElapsedTime(clockTick - c.startTick)
                       : !hasCustomerResponded(c)
@@ -9856,15 +9868,7 @@ export function AgentWorkspaceAdvancedPage({
                     // before this feature existed.
                     elapsed={
                       interaction.id === TOM_LEWIS_CALL_ID && tomLewisCallRinging ? (
-                        <span
-                          className={
-                            tomLewisRingSeconds <= 10
-                              ? "tabular-nums font-medium text-lyra-status-critical-strong"
-                              : "tabular-nums"
-                          }
-                        >
-                          {`00:${String(tomLewisRingSeconds).padStart(2, "0")}`}
-                        </span>
+                        renderTomLewisRingTimer()
                       ) : cardHeldSinceTick !== undefined
                         ? formatElapsedTime(clockTick - cardHeldSinceTick)
                         : earliestStart !== undefined
@@ -9909,7 +9913,7 @@ export function AgentWorkspaceAdvancedPage({
                             Accept
                           </Button>
                           <Button
-                            variant="destructive"
+                            variant="outline"
                             size="md"
                             className="flex-1"
                             onClick={(e: React.MouseEvent) => {
@@ -9917,7 +9921,6 @@ export function AgentWorkspaceAdvancedPage({
                               handleDeclineTomLewisCall();
                             }}
                           >
-                            <PhoneOff className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
                             Decline
                           </Button>
                         </div>
