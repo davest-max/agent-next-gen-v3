@@ -9784,7 +9784,7 @@ export function AgentWorkspaceAdvancedPage({
                     key={interaction.id}
                     className={
                       interaction.id === TOM_LEWIS_CALL_ID && tomLewisCallRinging && tomLewisRingSeconds <= 10
-                        ? "rounded-lyra-sm ring-2 ring-lyra-status-critical-strong animate-pulse"
+                        ? "w-fit mb-2 rounded-lyra-sm ring-2 ring-lyra-status-critical-strong [&>*]:mb-0"
                         : undefined
                     }
                   >
