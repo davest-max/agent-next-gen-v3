@@ -9784,16 +9784,17 @@ export function AgentWorkspaceAdvancedPage({
                     key={interaction.id}
                     className={
                       interaction.id === TOM_LEWIS_CALL_ID && tomLewisCallRinging
-                        ? `w-fit mb-2 rounded-lyra-sm [&>*]:mb-0 motion-reduce:animate-none ${
-                            tomLewisRingSeconds <= 10 ? "animate-ring-urgent" : "animate-ring-glow"
+                        ? `relative w-fit mb-2 rounded-lyra-sm [&>*]:mb-0 ${
+                            tomLewisCallLeaving ? "animate-wipe-left" : ""
                           }`
                         : undefined
                     }
                   >
                   <InteractionNavCard
-                    leaving={interaction.id === TOM_LEWIS_CALL_ID && tomLewisCallLeaving}
+                    // The auto-return / decline exit is a clip-wipe on this wrapper, not lyra-ui's slide-up.
+                    leaving={false}
                     // While the call is unanswered and the nav is collapsed, show the hover preview automatically.
-                    forceHoverOpen={interaction.id === TOM_LEWIS_CALL_ID && tomLewisCallRinging && !tomLewisCallLeaving}
+                    forceHoverOpen={interaction.id === TOM_LEWIS_CALL_ID && tomLewisCallRinging}
                     key={interaction.id}
                     currentChannelType={currentChannelType}
                     showChannelBadge={channels.length <= 1}
@@ -9975,6 +9976,13 @@ export function AgentWorkspaceAdvancedPage({
                     currentChannelKey={currentId}
                     onCurrentChannelChange={(key) => handleChannelSelect(interaction.id, key)}
                   />
+                  {interaction.id === TOM_LEWIS_CALL_ID && tomLewisCallRinging && tomLewisRingSeconds <= 10 && !tomLewisCallLeaving && (
+                    // Red border and glow appear together, under 10 seconds. The overlay matches the tile's box exactly.
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 rounded-lyra-sm border-2 border-lyra-status-critical-strong motion-reduce:animate-none animate-ring-urgent"
+                    />
+                  )}
                   </div>
                 );
               })}

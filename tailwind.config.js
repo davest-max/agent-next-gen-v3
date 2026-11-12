@@ -61,25 +61,19 @@ export default {
           "80%": { transform: "rotate(10deg)" },
           "85%": { transform: "rotate(0deg)" },
         },
-        "ring-glow": {
-          "0%, 100%": {
-            boxShadow:
-              "0 0 0 2px color-mix(in srgb, var(--lyra-color-status-critical-strong) 25%, transparent), 0 0 6px 1px color-mix(in srgb, var(--lyra-color-status-critical-strong) 15%, transparent)",
-          },
-          "50%": {
-            boxShadow:
-              "0 0 0 2px color-mix(in srgb, var(--lyra-color-status-critical-strong) 35%, transparent), 0 0 14px 4px color-mix(in srgb, var(--lyra-color-status-critical-strong) 35%, transparent)",
-          },
-        },
+        // Glow only: the red border itself is a real border on an overlay, so it appears with the glow.
         "ring-urgent": {
           "0%, 100%": {
-            boxShadow:
-              "0 0 0 2px var(--lyra-color-status-critical-strong), 0 0 6px 2px color-mix(in srgb, var(--lyra-color-status-critical-strong) 35%, transparent)",
+            boxShadow: "0 0 6px 2px color-mix(in srgb, var(--lyra-color-status-critical-strong) 35%, transparent)",
           },
           "50%": {
-            boxShadow:
-              "0 0 0 2px var(--lyra-color-status-critical-strong), 0 0 16px 6px color-mix(in srgb, var(--lyra-color-status-critical-strong) 55%, transparent)",
+            boxShadow: "0 0 16px 6px color-mix(in srgb, var(--lyra-color-status-critical-strong) 55%, transparent)",
           },
+        },
+        // Auto-decline / decline: the tile wipes away from right to left.
+        "wipe-left": {
+          from: { clipPath: "inset(0 0 0 0)" },
+          to: { clipPath: "inset(0 100% 0 0)" },
         },
       },
       animation: {
@@ -87,9 +81,9 @@ export default {
         "accordion-up": "accordion-up 200ms ease-in-out",
         // Incoming call: phone icon shakes like a ringing phone.
         "phone-ring": "phone-ring 2s ease-in-out infinite",
-        // Incoming call: soft glow around the tile while it rings, and a stronger one under 10 seconds.
-        "ring-glow": "ring-glow 2.4s ease-in-out infinite",
+        // Incoming call under 10 seconds: red border and glow together.
         "ring-urgent": "ring-urgent 1.6s ease-in-out infinite",
+        "wipe-left": "wipe-left 350ms ease-in forwards",
       },
     },
   },
