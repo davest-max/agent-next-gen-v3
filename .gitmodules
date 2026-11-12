@@ -1,0 +1,3 @@
+[submodule "lyra-ui"]
+	path = lyra-ui
+	url = https://github.com/davest-max/lyra-ui.git

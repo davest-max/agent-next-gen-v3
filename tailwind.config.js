@@ -7,7 +7,7 @@
 // "selected channel" highlight and 8/10 customer avatar colors to silently
 // render with zero CSS in this app (see lyra-ui/PROJECT_SUMMARY.md's
 // "Cross-Repo Sync" section for the incident).
-const lyraColors = require("../lyra-ui/tailwind-tokens.cjs");
+const lyraColors = require("./lyra-ui/tailwind-tokens.cjs");
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -15,7 +15,7 @@ export default {
   content: [
     "./index.html",
     "./src/**/*.{ts,tsx,js,jsx}",
-    "../lyra-ui/src/**/*.{ts,tsx}",
+    "./lyra-ui/src/**/*.{ts,tsx}",
   ],
   theme: {
     extend: {

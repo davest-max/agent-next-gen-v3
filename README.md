@@ -1,40 +1,42 @@
 # agent-next-gen-v3
 
-Vite + React + TypeScript prototype for the Agent Next Gen experience. It uses the shared `lyra-ui` design system through a local source alias, so **`lyra-ui` must be cloned next to this repo** before the app will build.
-
-## Folder layout
-
-Both repos must sit in the same parent folder:
-
-```
-<parent>/
-├── agent-next-gen-v3/   ← this repo
-└── lyra-ui/             ← design system (required)
-```
+Vite + React + TypeScript prototype for the Agent Next Gen experience. It uses the shared `lyra-ui` design system, which is included in this repo as a git submodule at `lyra-ui/`.
 
 ## Setup
 
 Requires Node.js 20 or newer (tested with Node 24) and npm.
 
-1. Clone `lyra-ui` next to this repo, pinned to the commit this app was last checked against (see `.lyra-ui-sync`):
+Clone with submodules:
 
-   ```bash
-   cd <parent>
-   git clone https://github.com/davidbauerjr991/lyra-ui.git
-   cd lyra-ui
-   git checkout 3c8ceadcee17133c83ba586168910523b4bc0664
-   npm install
-   ```
+```bash
+git clone --recurse-submodules https://github.com/davest-max/agent-next-gen-v3.git
+cd agent-next-gen-v3
+npm install
+npm run dev
+```
 
-2. Install this app's dependencies and start the dev server:
+If you already cloned without `--recurse-submodules`, fetch the design system with:
 
-   ```bash
-   cd ../agent-next-gen-v3
-   npm install
-   npm run dev
-   ```
+```bash
+git submodule update --init --recursive
+```
 
-If `npm run dev` fails with a module-not-found error for `@nicecxone/lyra-ui`, check that `lyra-ui` is at `../lyra-ui` relative to this repo. The alias is defined in `vite.config.ts`.
+## Design system (`lyra-ui`)
+
+`lyra-ui/` is a submodule pointing at [davest-max/lyra-ui](https://github.com/davest-max/lyra-ui), pinned to the commit this app is built against. The version recorded in `.lyra-ui-sync` is the one this app was last checked against.
+
+To update `lyra-ui` to a newer commit:
+
+```bash
+cd lyra-ui
+git fetch origin
+git checkout <commit-or-main>
+cd ..
+git add lyra-ui
+git commit -m "Update lyra-ui to <commit>"
+```
+
+Then record the new commit in `.lyra-ui-sync` and check that `npm run build` still passes.
 
 ## Scripts
 

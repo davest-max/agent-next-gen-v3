@@ -11,18 +11,18 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "@nicecxone/lyra-ui/styles": path.resolve(__dirname, "../lyra-ui/src/styles/lyra-tokens.css"),
+      "@nicecxone/lyra-ui/styles": path.resolve(__dirname, "./lyra-ui/src/styles/lyra-tokens.css"),
       // Mock "database" fixtures for the CreateNew → Outbound demo (agent
       // and customer records) — kept out of lyra-ui's public index.ts since
       // they're story-only fixtures, not real design-system exports, but
       // aliased individually (same pattern as /styles above) so this app's
       // demo data stays in sync with lyra-ui's instead of hand-copying a
       // second, drifting list. See lyra-ui/CONTRIBUTING.md §1.
-      "@nicecxone/lyra-ui/agents-data": path.resolve(__dirname, "../lyra-ui/src/components/__stories__/create-new-agents-data.ts"),
-      "@nicecxone/lyra-ui/customers-data": path.resolve(__dirname, "../lyra-ui/src/components/__stories__/create-new-customers-data.ts"),
+      "@nicecxone/lyra-ui/agents-data": path.resolve(__dirname, "./lyra-ui/src/components/__stories__/create-new-agents-data.ts"),
+      "@nicecxone/lyra-ui/customers-data": path.resolve(__dirname, "./lyra-ui/src/components/__stories__/create-new-customers-data.ts"),
       // Agentic AI card compositions (Real-Time Summary, Journey Summary...) live with the stories; aliased the same way.
-      "@nicecxone/lyra-ui/agentic-cards": path.resolve(__dirname, "../lyra-ui/src/components/__stories__/AgenticAICard.shared.tsx"),
-      "@nicecxone/lyra-ui": path.resolve(__dirname, "../lyra-ui/src/index.ts"),
+      "@nicecxone/lyra-ui/agentic-cards": path.resolve(__dirname, "./lyra-ui/src/components/__stories__/AgenticAICard.shared.tsx"),
+      "@nicecxone/lyra-ui": path.resolve(__dirname, "./lyra-ui/src/index.ts"),
     },
   },
 });
