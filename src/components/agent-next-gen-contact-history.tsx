@@ -1533,7 +1533,9 @@ export function ContactHistoryCard({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="self-start gap-1.5"
+                      // The small button's 10px horizontal padding would indent its icon and label
+                      // past the text above; pulling it back by that amount lines the content up.
+                      className="-ml-2.5 self-start gap-1.5"
                       disabled={redialDisabled}
                       title={redialDisabled ? "A call is already in progress" : undefined}
                       onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
