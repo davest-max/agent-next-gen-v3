@@ -293,7 +293,7 @@ export function buildContactHistoryEntryFromInteractionRecord(record: Interactio
     skillName: record.skill,
     channelType: record.type,
     channelLabel: record.channel,
-    timeAgo: formatInteractionRecordTimeAgo(record.createDateValue),
+    endedAt: record.createDateValue.getTime(),
     duration: record.resolutionTime,
     customerId: record.caseId,
   };

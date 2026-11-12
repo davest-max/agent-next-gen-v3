@@ -142,6 +142,25 @@ export const SESSION_STATUS_TO_CONTACT_HISTORY_VARIANT: Record<string, ContactHi
   Closed: "neutral",
 };
 
+/** Absolute timestamp for a sample entry `n` minutes before the page loaded. */
+function minutesAgo(n: number): number {
+  return Date.now() - n * 60_000;
+}
+
+/** How a contact's end time is shown: clock time for today, "Yesterday" plus
+ *  the clock time for yesterday, and a short date plus clock time for anything
+ *  older. Relative wording ("3 hrs ago") is no longer used here. */
+export function formatContactTime(endedAt: number, now: number = Date.now()): string {
+  const ended = new Date(endedAt);
+  const current = new Date(now);
+  const time = ended.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const days = Math.round((startOfDay(current) - startOfDay(ended)) / 86_400_000);
+  if (days <= 0) return time;
+  if (days === 1) return `Yesterday ${time}`;
+  return `${ended.toLocaleDateString([], { month: "short", day: "numeric" })} ${time}`;
+}
+
 export interface ContactHistoryEntry {
   id: string;
   name: string;
@@ -185,7 +204,7 @@ export interface ContactHistoryEntry {
    */
   channelType: ChannelType;
   channelLabel: string;
-  timeAgo: string;
+  endedAt: number;
   duration: string;
   /** Resolved disposition label (e.g. "Issue Resolved") and tag labels the
    *  agent picked in the Outcome popover before dismissing — see
@@ -626,7 +645,7 @@ export const CONTACT_HISTORY: ContactHistoryEntry[] = [
   {
     id: "ch1", name: "Nathan Cole", statusLabel: "Resolved", statusVariant: "success", redial: true,
     description: "Customer was locked out after 5 failed attempts. Verified identity via KBA, reset credentials, and confirmed access restored.",
-    caseId: "CST-22841", skillName: "Technical Support", channelType: "voice", channelLabel: "Voice", timeAgo: "8m ago", duration: "8m 14s",
+    caseId: "CST-22841", skillName: "Technical Support", channelType: "voice", channelLabel: "Voice", endedAt: minutesAgo(8), duration: "8m 14s",
     direction: "inbound",
     // Per explicit request ("add these contacts to the database ... tied
     // to the database instead of a one-off") — the real backing
@@ -650,7 +669,7 @@ export const CONTACT_HISTORY: ContactHistoryEntry[] = [
   {
     id: "ch2", name: "Priya Shah", statusLabel: "Resolved", statusVariant: "success", redial: false,
     description: "Duplicate charge dispute — $89.99 refund issued",
-    caseId: "CST-30164", skillName: "Billing", channelType: "chat", channelLabel: "Chat", timeAgo: "34m ago", duration: "12m 02s",
+    caseId: "CST-30164", skillName: "Billing", channelType: "chat", channelLabel: "Chat", endedAt: minutesAgo(34), duration: "12m 02s",
     // See "ch1"'s identical `customerId` comment just above for the full
     // "why" — same fix, same real backing record (PRIYA_SHAH_CUSTOMER_RECORD,
     // create-new-customers-data.ts).
@@ -669,7 +688,7 @@ export const CONTACT_HISTORY: ContactHistoryEntry[] = [
   {
     id: "ch3", name: "Omar Farooq", statusLabel: "Resolved", statusVariant: "success", redial: false,
     description: "Plan upgrade confirmation & feature overview",
-    caseId: "CST-16823", skillName: "Sales", channelType: "email", channelLabel: "Email", timeAgo: "2h ago", duration: "6m 30s",
+    caseId: "CST-16823", skillName: "Sales", channelType: "email", channelLabel: "Email", endedAt: minutesAgo(2 * 60), duration: "6m 30s",
     // See "ch1"'s identical `customerId` comment above for the full "why" —
     // same fix, same real backing record (OMAR_FAROOQ_CUSTOMER_RECORD,
     // create-new-customers-data.ts).
@@ -682,7 +701,7 @@ export const CONTACT_HISTORY: ContactHistoryEntry[] = [
   {
     id: "ch4", name: "Lauren Briggs", statusLabel: "Escalated", statusVariant: "critical", redial: true,
     description: "Escalated fraud investigation — 4 suspicious transactions",
-    caseId: "CST-27760", skillName: "Escalations", channelType: "voice", channelLabel: "Voice", timeAgo: "5h ago", duration: "22m 47s",
+    caseId: "CST-27760", skillName: "Escalations", channelType: "voice", channelLabel: "Voice", endedAt: minutesAgo(5 * 60), duration: "22m 47s",
     direction: "outbound",
     // See "ch1"'s identical `customerId` comment above for the full "why" —
     // same fix, same real backing record (LAUREN_BRIGGS_CUSTOMER_RECORD,
@@ -702,7 +721,7 @@ export const CONTACT_HISTORY: ContactHistoryEntry[] = [
   {
     id: "ch5", name: "Mei Tanaka", statusLabel: "Resolved", statusVariant: "success", redial: false,
     description: "Shipping delay — expedited replacement dispatched",
-    caseId: "CST-31045", skillName: "General Support", channelType: "chat", channelLabel: "Chat", timeAgo: "1d ago", duration: "9m 15s",
+    caseId: "CST-31045", skillName: "General Support", channelType: "chat", channelLabel: "Chat", endedAt: minutesAgo(1 * 1440), duration: "9m 15s",
     // See "ch1"'s identical `customerId` comment above for the full "why" —
     // same fix, same real backing record (MEI_TANAKA_CUSTOMER_RECORD,
     // create-new-customers-data.ts).
@@ -770,7 +789,7 @@ export interface ContactHistoryTemplate {
   statusLabel: string;
   statusVariant: ContactHistoryStatusVariant;
   description: string;
-  timeAgo: string;
+  endedAt: number;
   duration: string;
   skillName: string;
   /** See `ContactHistoryEntry.direction`'s own doc comment. Spread straight
@@ -934,7 +953,7 @@ export function buildDismissedContactHistoryEntry(
     // row's real direction was already decided the moment that channel was
     // opened, dismissing it here doesn't change how it came to exist.
     direction: primaryChannel?.direction,
-    timeAgo: "Just now",
+    endedAt: Date.now(),
     duration: formatElapsedTime(clockTick - earliestStart),
     customerId: /^customer-\d+$/.test(interaction.id) ? interaction.id : undefined,
     // `ContactHistoryEntry.channels`'s own doc comment: for a row with no
@@ -987,11 +1006,11 @@ export function buildDismissedContactHistoryEntry(
 // older than its own label.
 export const EXTENDED_CONTACT_HISTORY_CUSTOMER_INDEXES = [5, 12, 19, 26, 33];
 export const EXTENDED_CONTACT_HISTORY_TEMPLATES: ContactHistoryTemplate[] = [
-  { statusLabel: "Resolved", statusVariant: "success", description: "Password reset — identity verified via KBA, access restored", timeAgo: "1d ago", duration: "7m 40s", skillName: "Technical Support", direction: "inbound" },
-  { statusLabel: "Resolved", statusVariant: "success", description: "Billing question — walked through recent charges, no refund needed", timeAgo: "1d ago", duration: "5m 18s", skillName: "Billing", direction: "inbound" },
-  { statusLabel: "Escalated", statusVariant: "critical", description: "Product setup issue escalated to Tier 2 for configuration support", timeAgo: "2d ago", duration: "14m 05s", skillName: "Escalations", direction: "outbound" },
-  { statusLabel: "Resolved", statusVariant: "success", description: "Subscription cancellation request — retention offer accepted", timeAgo: "2d ago", duration: "10m 52s", skillName: "Sales", direction: "inbound" },
-  { statusLabel: "Resolved", statusVariant: "success", description: "Shipping delay follow-up — updated delivery window provided", timeAgo: "2d ago", duration: "4m 27s", skillName: "General Support", direction: "outbound" },
+  { statusLabel: "Resolved", statusVariant: "success", description: "Password reset — identity verified via KBA, access restored", endedAt: minutesAgo(1 * 1440), duration: "7m 40s", skillName: "Technical Support", direction: "inbound" },
+  { statusLabel: "Resolved", statusVariant: "success", description: "Billing question — walked through recent charges, no refund needed", endedAt: minutesAgo(1 * 1440), duration: "5m 18s", skillName: "Billing", direction: "inbound" },
+  { statusLabel: "Escalated", statusVariant: "critical", description: "Product setup issue escalated to Tier 2 for configuration support", endedAt: minutesAgo(2 * 1440), duration: "14m 05s", skillName: "Escalations", direction: "outbound" },
+  { statusLabel: "Resolved", statusVariant: "success", description: "Subscription cancellation request — retention offer accepted", endedAt: minutesAgo(2 * 1440), duration: "10m 52s", skillName: "Sales", direction: "inbound" },
+  { statusLabel: "Resolved", statusVariant: "success", description: "Shipping delay follow-up — updated delivery window provided", endedAt: minutesAgo(2 * 1440), duration: "4m 27s", skillName: "General Support", direction: "outbound" },
 ];
 export const EXTENDED_CONTACT_HISTORY: ContactHistoryEntry[] = buildContactHistoryFromCustomers(
   EXTENDED_CONTACT_HISTORY_CUSTOMER_INDEXES,
@@ -1043,7 +1062,7 @@ export const CONTACT_HISTORY_STRESS_COUNT = 115;
  *  customer index repeats within one batch. `id` here is derived from the
  *  loop index instead (`ch-stress-${i}`), so every row stays a guaranteed-
  *  unique React key even with the 60-customer pool wrapping around twice.
- *  `timeAgo` stays flat at "2d ago" for the whole batch, same reasoning as
+ *  `endedAt` stays at two days ago for the whole batch, same reasoning as
  *  `EXTENDED_CONTACT_HISTORY` above (hour 48-72 of the window). */
 export const CONTACT_HISTORY_STRESS_BATCH: ContactHistoryEntry[] = Array.from(
   { length: CONTACT_HISTORY_STRESS_COUNT },
@@ -1065,7 +1084,7 @@ export const CONTACT_HISTORY_STRESS_BATCH: ContactHistoryEntry[] = Array.from(
       statusLabel: status.statusLabel,
       statusVariant: status.statusVariant,
       description: CONTACT_HISTORY_STRESS_DESCRIPTIONS[i % CONTACT_HISTORY_STRESS_DESCRIPTIONS.length],
-      timeAgo: "2d ago",
+      endedAt: minutesAgo(2 * 1440),
       duration: CONTACT_HISTORY_STRESS_DURATIONS[i % CONTACT_HISTORY_STRESS_DURATIONS.length],
       skillName: CONTACT_HISTORY_STRESS_SKILLS[i % CONTACT_HISTORY_STRESS_SKILLS.length],
       // Deterministic alternation (not `Math.random()`), same convention as
@@ -1516,7 +1535,7 @@ export function ContactHistoryCard({
                       icon={contactHistoryChannelIcon(entry)}
                     />
                   </Tooltip>
-                  <span className="lyra-body-sm text-lyra-fg-secondary whitespace-nowrap">{entry.timeAgo}</span>
+                  <span className="lyra-body-sm text-lyra-fg-secondary whitespace-nowrap">{formatContactTime(entry.endedAt)}</span>
                 </div>
               </div>
             );
@@ -1546,7 +1565,7 @@ export function ContactHistoryCard({
  *  captured Date/timestamp either — every channel type here just shows
  *  `duration` + `description` under one notes label ("Call Notes" for
  *  voice, matching that same convention's own wording; "Chat Summary"/
- *  "Email Summary" for the other two), and the meta line uses `timeAgo`
+ *  "Email Summary" for the other two), and the meta line uses `endedAt` (formatted by `formatContactTime`)
  *  (a relative string, e.g. "8m ago") in place of that other panel's real
  *  formatted timestamp.
  *
@@ -1652,7 +1671,7 @@ export function ContactHistoryEntryDetail({
           {/* Per explicit request ("hide resolved as there is no status
               for a voice call") — voice has no real status concept, only
               a disposition (shown in the gray card below instead). */}
-          {[isVoice ? null : entry.statusLabel, displayIdentity, entry.timeAgo].filter(Boolean).join(" · ")}
+          {[isVoice ? null : entry.statusLabel, displayIdentity, formatContactTime(entry.endedAt)].filter(Boolean).join(" · ")}
         </span>
         <Tooltip content={contactHistoryChannelTooltipLabel(entry)} placement="top">
           <Tag
