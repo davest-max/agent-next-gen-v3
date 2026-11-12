@@ -34,7 +34,6 @@ import {
   Badge,
   QuickReplyVariableForm,
   QuickReplyMenu,
-  SuccessIconSolid,
   OutcomePanel,
   type TagVariant,
   type TagPickerOption,
@@ -79,6 +78,7 @@ import {
   AlertCircle,
   History,
   RefreshCw,
+  CircleCheckBig,
 } from "lucide-react";
 import {
   CURRENT_AGENT_FIRST_NAME,
@@ -2462,18 +2462,11 @@ showViewDetails?: boolean;
                       className={cn("gap-1.5 text-lyra-fg-default", outcomeAfterStatus && "order-2", statusAndKebabBeforeOutcome && "order-3")}
                       onClick={(e: React.MouseEvent) => e.stopPropagation()}
                     >
-                      {/* Per explicit request ("make the outcome check button
-                          a solid blue circle"): swaps the outline `CircleCheck`
-                          lucide icon for lyra-ui's own `SuccessIconSolid` (a
-                          filled circle + white checkmark, recolorable via
-                          `text-*` since its circle is `fill="currentColor"`)
-                          — same component `WarningIconSolid` a few hundred
-                          lines up already uses for its own solid badge. Kept
-                          the existing `text-lyra-status-info-strong` blue tint
-                          rather than switching to the icon's "success" green
-                          default, matching the blue this Outcome icon has
-                          always used. */}
-                      <SuccessIconSolid className="h-4 w-4 text-lyra-status-info-strong" />
+                      {/* Outlined `CircleCheckBig` at a heavier stroke in the lyra
+                          info-strong blue, matching the channel row's Outcome
+                          icon (outline keeps it distinct from the filled green
+                          availability check). */}
+                      <CircleCheckBig className="h-4 w-4 text-lyra-status-info-strong" strokeWidth={2.5} />
                       {/* Per explicit request: in the session row, Outcome is a
                           ghost button with a visible label next to the solid
                           blue check. The interactionNavItem / ChannelRow
@@ -2492,18 +2485,11 @@ showViewDetails?: boolean;
               // identically (no icon) rather than a static disabled one.
               !isClosed && (
                 <Button variant="ghost" size="sm" title="Outcome" disabled={controlsReadOnly} className={cn("gap-1.5 text-lyra-fg-default", outcomeAfterStatus && "order-2", statusAndKebabBeforeOutcome && "order-3")}>
-                  {/* Per explicit request ("make the outcome check button
-                      a solid blue circle"): swaps the outline `CircleCheck`
-                      lucide icon for lyra-ui's own `SuccessIconSolid` (a
-                      filled circle + white checkmark, recolorable via
-                      `text-*` since its circle is `fill="currentColor"`)
-                      — same component `WarningIconSolid` a few hundred
-                      lines up already uses for its own solid badge. Kept
-                      the existing `text-lyra-status-info-strong` blue tint
-                      rather than switching to the icon's "success" green
-                      default, matching the blue this Outcome icon has
-                      always used. */}
-                  <SuccessIconSolid className="h-4 w-4 text-lyra-status-info-strong" />
+                  {/* Outlined `CircleCheckBig` at a heavier stroke in the lyra
+                      info-strong blue, matching the channel row's Outcome
+                      icon (outline keeps it distinct from the filled green
+                      availability check). */}
+                  <CircleCheckBig className="h-4 w-4 text-lyra-status-info-strong" strokeWidth={2.5} />
                   <span>Outcome</span>
                 </Button>
               )
