@@ -1529,6 +1529,23 @@ export function ContactHistoryCard({
                       subhead) — this is purely a display swap for this one
                       line. See `skillName`'s own doc comment. */}
                   <span className="lyra-body-sm text-lyra-fg-secondary">{entry.skillName}</span>
+                  {entry.channelType === "voice" && onRedialEntry && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="self-start gap-1.5"
+                      disabled={redialDisabled}
+                      title={redialDisabled ? "A call is already in progress" : undefined}
+                      onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                        // Stops the click from also opening this row's summary.
+                        e.stopPropagation();
+                        onRedialEntry(entry, e.currentTarget);
+                      }}
+                    >
+                      <PhoneOutgoing className="h-3.5 w-3.5" strokeWidth={1.5} />
+                      Redial
+                    </Button>
+                  )}
                 </div>
                 <div className="flex flex-col items-end gap-1.5 shrink-0">
                   {/* Channel-type pill — "purple"/"teal"/"pink" per
@@ -1545,22 +1562,6 @@ export function ContactHistoryCard({
                     />
                   </Tooltip>
                   <span className="lyra-body-sm text-lyra-fg-secondary whitespace-nowrap">{formatContactTime(entry.endedAt)}</span>
-                  {entry.channelType === "voice" && onRedialEntry && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={redialDisabled}
-                      title={redialDisabled ? "A call is already in progress" : undefined}
-                      onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                        // Stops the click from also opening this row's summary.
-                        e.stopPropagation();
-                        onRedialEntry(entry, e.currentTarget);
-                      }}
-                    >
-                      <PhoneOutgoing className="h-3.5 w-3.5" strokeWidth={1.5} />
-                      Redial
-                    </Button>
-                  )}
                 </div>
               </div>
             );
