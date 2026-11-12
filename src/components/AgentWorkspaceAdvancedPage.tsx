@@ -2166,6 +2166,9 @@ export function AgentWorkspaceAdvancedPage({
   // Tom Lewis's cold incoming call rings in the left nav (Accept / Decline on his tile) until the agent answers; a ringing call has no
   // live-call UI and doesn't count as the agent being on a call.
   const [tomLewisCallRinging, setTomLewisCallRinging] = useState(false);
+  // Seconds left before an unanswered ringing call auto-returns to the queue. Counts down only while ringing.
+  const TOM_LEWIS_RING_SECONDS = 30;
+  const [tomLewisRingSeconds, setTomLewisRingSeconds] = useState(TOM_LEWIS_RING_SECONDS);
   // Cold inbound calls with no AI agent (Tom rings and needs Accept; Maya is answered automatically).
   const isColdCallId = (id: string | undefined) => id === TOM_LEWIS_CALL_ID || id === MAYA_CHEN_CALL_ID;
   const findLiveVoiceThread = (interaction: Interaction) => {
@@ -3449,6 +3452,7 @@ export function AgentWorkspaceAdvancedPage({
         prev.some((i) => i.id === TOM_LEWIS_CALL_ID) ? prev : [...prev, buildTomLewisCallInteraction(clockTickRef.current)]
       );
       setNavOpen(true);
+      setTomLewisRingSeconds(TOM_LEWIS_RING_SECONDS);
       setTomLewisCallRinging(true);
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -3531,9 +3535,10 @@ export function AgentWorkspaceAdvancedPage({
     });
   };
   const [tomLewisCallLeaving, setTomLewisCallLeaving] = useState(false);
-  const handleDeclineTomLewisCall = () => {
+  // Shared by Decline (agent action) and the countdown reaching zero (auto-return to queue).
+  const dismissTomLewisCall = (toast: { title: string; message: string }) => {
     if (tomLewisCallLeaving) return;
-    addToast({ variant: "info", title: "Call declined", message: "Tom Lewis call declined", duration: 4000 });
+    addToast({ variant: "info", ...toast, duration: 4000 });
     setTomLewisCallLeaving(true);
     // Let the tile animate out before removing it.
     window.setTimeout(() => {
@@ -3542,6 +3547,20 @@ export function AgentWorkspaceAdvancedPage({
       setTomLewisCallLeaving(false);
     }, 350);
   };
+  const handleDeclineTomLewisCall = () =>
+    dismissTomLewisCall({ title: "Call declined", message: "Tom Lewis call declined" });
+  const handleTomLewisReturnToQueue = () =>
+    dismissTomLewisCall({ title: "Call returned to queue", message: "Tom Lewis call returned to queue" });
+  // Count down while the call rings; at zero it goes back to the queue automatically.
+  useEffect(() => {
+    if (!tomLewisCallRinging || tomLewisCallLeaving) return;
+    const id = window.setInterval(() => setTomLewisRingSeconds((s) => Math.max(0, s - 1)), 1000);
+    return () => window.clearInterval(id);
+  }, [tomLewisCallRinging, tomLewisCallLeaving]);
+  useEffect(() => {
+    if (tomLewisCallRinging && !tomLewisCallLeaving && tomLewisRingSeconds === 0) handleTomLewisReturnToQueue();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tomLewisRingSeconds, tomLewisCallRinging, tomLewisCallLeaving]);
   const [showWelcomeModal, setShowWelcomeModal] = useState(true);
   // Flushes whatever `fireAgentLegStatusToast` deferred (further up this
   // component) the moment the welcome modal actually closes (Go Available /
@@ -9749,6 +9768,14 @@ export function AgentWorkspaceAdvancedPage({
                   (c) => c.type === "voice" && c.heldByAgent
                 )?.heldSinceTick;
                 return (
+                  <div
+                    key={interaction.id}
+                    className={
+                      interaction.id === TOM_LEWIS_CALL_ID && tomLewisCallRinging && tomLewisRingSeconds <= 10
+                        ? "rounded-lyra-sm ring-2 ring-lyra-status-critical-strong animate-pulse"
+                        : undefined
+                    }
+                  >
                   <InteractionNavCard
                     leaving={interaction.id === TOM_LEWIS_CALL_ID && tomLewisCallLeaving}
                     // While the call is unanswered and the nav is collapsed, show the hover preview automatically.
@@ -9828,7 +9855,17 @@ export function AgentWorkspaceAdvancedPage({
                     // (`cardHeldSinceTick === undefined`), exactly as
                     // before this feature existed.
                     elapsed={
-                      cardHeldSinceTick !== undefined
+                      interaction.id === TOM_LEWIS_CALL_ID && tomLewisCallRinging ? (
+                        <span
+                          className={
+                            tomLewisRingSeconds <= 10
+                              ? "tabular-nums font-medium text-lyra-status-critical-strong"
+                              : "tabular-nums"
+                          }
+                        >
+                          {`00:${String(tomLewisRingSeconds).padStart(2, "0")}`}
+                        </span>
+                      ) : cardHeldSinceTick !== undefined
                         ? formatElapsedTime(clockTick - cardHeldSinceTick)
                         : earliestStart !== undefined
                         ? formatElapsedTime(cardAwaitingWaitSeconds ?? clockTick - earliestStart)
@@ -9929,6 +9966,7 @@ export function AgentWorkspaceAdvancedPage({
                     currentChannelKey={currentId}
                     onCurrentChannelChange={(key) => handleChannelSelect(interaction.id, key)}
                   />
+                  </div>
                 );
               })}
             </>
