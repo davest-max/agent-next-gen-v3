@@ -5089,13 +5089,12 @@ export function AgentWorkspaceAdvancedPage({
   // — not just the interaction currently being VIEWED, so switching over to
   // check on a different customer's chat mid-call doesn't incorrectly clear
   // "Working" the instant the voice call scrolls out of view.
-  // `preCallStatusRef` remembers whatever status was active the moment the
-  // call started, so hanging up restores it (Available/Unavailable/a
-  // specific reason code) instead of always falling back to one hardcoded
-  // default — same "restore what was there before" pattern
-  // `connectAgentLegSignal`'s own effect (agent-profile.tsx) already uses
-  // for a comparable "external signal drives an internal transition"
-  // shape. Deliberately keyed only on `isOnVoiceCall` (not `agentStatus`
+  // Hanging up moves the agent to "After Call Work" (per explicit request),
+  // not back to whatever status they had before the call. The earlier
+  // "restore what was there before" pattern was removed for that reason.
+  // (`connectAgentLegSignal`'s own effect in agent-profile.tsx uses a similar
+  // external-signal-drives-a-transition shape.)
+  // Deliberately keyed only on `isOnVoiceCall` (not `agentStatus`
   // too) — this is an edge-triggered effect reacting to the call actually
   // starting/ending, not something that should re-fire just because
   // `agentStatus` itself changed for some unrelated reason.
@@ -5108,17 +5107,15 @@ export function AgentWorkspaceAdvancedPage({
   const isOnVoiceCall = interactions.some(
     (i) => !i.closed && !i.voiceCallEnded && !(i.id === TOM_LEWIS_CALL_ID && tomLewisCallRinging) && i.threads.some((t) => t.type === "voice")
   );
-  const preCallStatusRef = useRef<AgentStatus | null>(null);
   useEffect(() => {
     if (isOnVoiceCall) {
       if (agentStatus !== "working") {
-        preCallStatusRef.current = agentStatus;
         setAgentStatus("working");
         setElapsedSeconds(0);
       }
     } else if (agentStatus === "working") {
-      setAgentStatus(preCallStatusRef.current ?? "unavailable");
-      preCallStatusRef.current = null;
+      // Ending a call puts the agent into After Call Work, not back to their pre-call status.
+      setAgentStatus("after-call-work");
       setElapsedSeconds(0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
